@@ -1,0 +1,23 @@
+{
+  "_comment": [
+    "Hand-tuned logistic-regression coefficients in logit space, calibrated",
+    "against the synthetic seed data to produce reasonable probabilities.",
+    "In production: train on historical churn/renewal data and replace",
+    "this file. Each agent run records which coefficients version was used",
+    "so forecasts are auditable.",
+    "",
+    "Probability = sigmoid(intercept + sum(coef[k] * feature[k]))"
+  ],
+  "version": "v0.1.0-synthetic",
+  "intercept": 1.5,
+  "coefficients": {
+    "engagement_decay":         -3.2,
+    "avg_csat_3mo":              0.45,
+    "p1_count_30d":             -0.30,
+    "usage_growth_pct_div_100":  0.50,
+    "module_gap_count":         -0.40,
+    "exec_sponsor_present":      0.85,
+    "previous_renewal_count":    0.55,
+    "contract_months_in":       -0.005
+  }
+}

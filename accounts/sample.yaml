@@ -1,0 +1,186 @@
+# Synthetic accounts for the demo. Each account has renewal-relevant
+# features; the model scores them.
+# In production this YAML is materialized from HubSpot + portal usage +
+# Zendesk + the AAM signals tables. Same schema either way.
+
+accounts:
+  - id: acct-001
+    name: Pinnacle Trust Bank
+    tier: gold
+    arr: 120000
+    industry: financial_services
+    contract_end: 2026-06-15
+    contract_months_in: 14
+    previous_renewal_count: 1
+    # Renewal-feature inputs (typically derived from AAM signals)
+    engagement_decay: 0.83          # 0=none, 1=severe
+    avg_csat_3mo: 4.2
+    p1_count_30d: 0
+    usage_growth_pct: -65           # -65% drop
+    module_gap_count: 0
+    exec_sponsor_present: 0
+
+  - id: acct-002
+    name: Helix Biotech
+    tier: silver
+    arr: 48000
+    industry: healthcare
+    contract_end: 2026-09-30
+    contract_months_in: 8
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.8
+    p1_count_30d: 0
+    usage_growth_pct: 320            # explosive growth
+    module_gap_count: 0
+    exec_sponsor_present: 1
+
+  - id: acct-003
+    name: Arcadia Logistics
+    tier: silver
+    arr: 52000
+    industry: logistics
+    contract_end: 2026-07-04
+    contract_months_in: 10
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.7
+    p1_count_30d: 0
+    usage_growth_pct: 35
+    module_gap_count: 0
+    exec_sponsor_present: 1
+
+  - id: acct-004
+    name: Vanguard Defense Systems
+    tier: platinum
+    arr: 240000
+    industry: defense
+    contract_end: 2027-04-01
+    contract_months_in: 18
+    previous_renewal_count: 1
+    engagement_decay: 0.2
+    avg_csat_3mo: 3.1
+    p1_count_30d: 6
+    usage_growth_pct: 5
+    module_gap_count: 0
+    exec_sponsor_present: 1
+
+  - id: acct-005
+    name: Meridian Insurance Group
+    tier: gold
+    arr: 96000
+    industry: insurance
+    contract_end: 2026-06-04
+    contract_months_in: 11
+    previous_renewal_count: 0
+    engagement_decay: 0.45
+    avg_csat_3mo: 4.0
+    p1_count_30d: 0
+    usage_growth_pct: -10
+    module_gap_count: 0
+    exec_sponsor_present: 0
+
+  - id: acct-006
+    name: Northwind Energy
+    tier: gold
+    arr: 110000
+    industry: energy
+    contract_end: 2027-11-01
+    contract_months_in: 6
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.5
+    p1_count_30d: 0
+    usage_growth_pct: 12
+    module_gap_count: 1                     # bought compliance, never activated
+    exec_sponsor_present: 1
+
+  - id: acct-007
+    name: Beacon Health Network
+    tier: silver
+    arr: 42000
+    industry: healthcare
+    contract_end: 2027-12-31
+    contract_months_in: 7
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.5
+    p1_count_30d: 0
+    usage_growth_pct: 0
+    module_gap_count: 0
+    exec_sponsor_present: 0
+
+  - id: acct-008
+    name: Sentinel Aerospace
+    tier: gold
+    arr: 98000
+    industry: defense
+    contract_end: 2027-12-31
+    contract_months_in: 4
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.7
+    p1_count_30d: 0
+    usage_growth_pct: 80
+    module_gap_count: 0
+    exec_sponsor_present: 1
+
+  - id: acct-009
+    name: Coastal Maritime Authority
+    tier: bronze
+    arr: 24000
+    industry: public_sector
+    contract_end: 2028-04-01
+    contract_months_in: 20
+    previous_renewal_count: 2
+    engagement_decay: 0
+    avg_csat_3mo: 4.4
+    p1_count_30d: 0
+    usage_growth_pct: 0
+    module_gap_count: 0
+    exec_sponsor_present: 0
+
+  - id: acct-010
+    name: Aurora Robotics
+    tier: silver
+    arr: 54000
+    industry: manufacturing
+    contract_end: 2026-12-15
+    contract_months_in: 2
+    previous_renewal_count: 0
+    engagement_decay: 0
+    avg_csat_3mo: 4.5
+    p1_count_30d: 0
+    usage_growth_pct: 217
+    module_gap_count: 0
+    exec_sponsor_present: 1
+
+  - id: acct-011
+    name: Rivermark Fintech
+    tier: gold
+    arr: 130000
+    industry: financial_services
+    contract_end: 2026-10-15
+    contract_months_in: 15
+    previous_renewal_count: 1
+    engagement_decay: 0.7
+    avg_csat_3mo: 3.4
+    p1_count_30d: 3
+    usage_growth_pct: -25
+    module_gap_count: 0
+    exec_sponsor_present: 0
+
+  - id: acct-012
+    name: Citadel Asset Management
+    tier: platinum
+    arr: 280000
+    industry: financial_services
+    contract_end: 2028-04-15
+    contract_months_in: 22
+    previous_renewal_count: 2
+    engagement_decay: 0
+    avg_csat_3mo: 4.9
+    p1_count_30d: 0
+    usage_growth_pct: 18
+    module_gap_count: 0
+    exec_sponsor_present: 1

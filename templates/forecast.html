@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Renewal Forecast — {{ run_id }}</title>
+<style>
+  @page { size: Letter; margin: 22mm 18mm; @bottom-center { content: counter(page) " / " counter(pages); color: #888; font-size: 9pt; } }
+  body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1a1a1a; font-size: 10.5pt; line-height: 1.45; }
+
+  .cover { text-align: center; padding-top: 50mm; }
+  .cover h1 { font-size: 30pt; margin: 4mm 0 6mm; }
+  .cover .meta { color: #555; font-size: 11pt; }
+  .pillrow { margin-top: 18mm; }
+  .pill { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 11pt; }
+  .pill.arr { background: #e7f0fb; color: #0b3d91; }
+  .pill.risk { background: #f8d7da; color: #721c24; }
+  .pill.prob { background: #d4edda; color: #155724; }
+  .pagebreak { page-break-after: always; }
+
+  h2.section { font-size: 16pt; border-bottom: 2px solid #0b3d91; padding-bottom: 4px; margin-top: 14mm; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4mm; }
+  table th, table td { padding: 6px 8px; text-align: left; vertical-align: top; font-size: 9.5pt; }
+  table th { background: #f4f6f9; font-weight: 700; border-bottom: 1px solid #ccc; }
+  table td { border-bottom: 1px solid #eaeaea; }
+  td.right { text-align: right; }
+  .prob-bar-bg { display: inline-block; width: 60px; height: 10px; background: #eee; border-radius: 4px; vertical-align: middle; }
+  .prob-bar { display: inline-block; height: 10px; border-radius: 4px; vertical-align: top; }
+  .prob-bar.high { background: #28a745; }
+  .prob-bar.mid { background: #ffc107; }
+  .prob-bar.low { background: #dc3545; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <h1>Renewal Forecast</h1>
+  <div class="meta">
+    Run id: <code>{{ run_id }}</code> · Model: <code>{{ model_version }}</code><br>
+    Generated: {{ generated_at }}
+  </div>
+  <div class="pillrow">
+    <span class="pill arr">${{ "{:,.0f}".format(aggregate.total_arr) }} ARR in book</span>
+    &nbsp;<span class="pill risk">${{ "{:,.0f}".format(aggregate.total_at_risk) }} at risk</span>
+    &nbsp;<span class="pill prob">{{ "%.1f"|format(aggregate.avg_renew_probability * 100) }}% avg renew prob</span>
+  </div>
+</section>
+
+<div class="pagebreak"></div>
+
+<h2 class="section">ARR at risk by quarter</h2>
+<table>
+  <thead>
+    <tr><th>Quarter</th><th class="right">Accounts</th><th class="right">Total ARR</th><th class="right">ARR at risk</th><th class="right">% at risk</th></tr>
+  </thead>
+  <tbody>
+    {% for q in aggregate.by_quarter %}
+    <tr>
+      <td><code>{{ q.quarter }}</code></td>
+      <td class="right">{{ q.count }}</td>
+      <td class="right">${{ "{:,.0f}".format(q.arr) }}</td>
+      <td class="right">${{ "{:,.0f}".format(q.at_risk) }}</td>
+      <td class="right">{{ "%.0f"|format(q.at_risk / q.arr * 100 if q.arr else 0) }}%</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2 class="section">High-risk accounts (renew probability &lt; 50%)</h2>
+{% if aggregate.high_risk_accounts %}
+<table>
+  <thead><tr><th>Account</th><th>Tier</th><th class="right">ARR</th><th class="right">Prob</th><th class="right">At risk</th><th>Contract end</th></tr></thead>
+  <tbody>
+    {% for s in aggregate.high_risk_accounts %}
+    <tr>
+      <td>{{ s.account_name }}</td>
+      <td>{{ s.tier }}</td>
+      <td class="right">${{ "{:,.0f}".format(s.arr) }}</td>
+      <td class="right">
+        <span class="prob-bar-bg"><span class="prob-bar low" style="width: {{ s.renew_probability * 60 }}px;"></span></span>
+        {{ "%.0f"|format(s.renew_probability * 100) }}%
+      </td>
+      <td class="right">${{ "{:,.0f}".format(s.arr_at_risk) }}</td>
+      <td>{{ s.contract_end }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No accounts below the 50% renew-probability threshold this run.</p>
+{% endif %}
+
+<h2 class="section">Expansion candidates</h2>
+{% if aggregate.expansion_candidates %}
+<table>
+  <thead><tr><th>Account</th><th>Tier</th><th class="right">ARR</th><th class="right">Renew prob</th><th class="right">Usage growth</th></tr></thead>
+  <tbody>
+    {% for s in aggregate.expansion_candidates %}
+    <tr>
+      <td>{{ s.account_name }}</td>
+      <td>{{ s.tier }}</td>
+      <td class="right">${{ "{:,.0f}".format(s.arr) }}</td>
+      <td class="right">{{ "%.0f"|format(s.renew_probability * 100) }}%</td>
+      <td class="right">+{{ "%.0f"|format(s.features.usage_growth_pct_div_100 * 100) }}%</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No accounts meet expansion criteria this run.</p>
+{% endif %}
+
+<div class="pagebreak"></div>
+
+<h2 class="section">All accounts — full forecast</h2>
+<table>
+  <thead><tr><th>ID</th><th>Account</th><th class="right">ARR</th><th class="right">Renew prob</th><th class="right">At risk</th><th>End</th></tr></thead>
+  <tbody>
+    {% for s in scored|sort(attribute='renew_probability') %}
+    <tr>
+      <td><code>{{ s.account_id }}</code></td>
+      <td>{{ s.account_name }}</td>
+      <td class="right">${{ "{:,.0f}".format(s.arr) }}</td>
+      <td class="right">
+        {% set bar_class = 'high' if s.renew_probability >= 0.85 else ('mid' if s.renew_probability >= 0.5 else 'low') %}
+        <span class="prob-bar-bg"><span class="prob-bar {{ bar_class }}" style="width: {{ s.renew_probability * 60 }}px;"></span></span>
+        {{ "%.0f"|format(s.renew_probability * 100) }}%
+      </td>
+      <td class="right">${{ "{:,.0f}".format(s.arr_at_risk) }}</td>
+      <td>{{ s.contract_end }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p style="margin-top: 8mm; color: #888; font-size: 9pt;">
+  Forecast generated by deterministic logistic regression on per-account
+  signals. Coefficients version <code>{{ model_version }}</code> are
+  versioned in <code>model/coefficients.json</code>; the same accounts +
+  same coefficients reproduce this report exactly.
+</p>
+
+</body>
+</html>
