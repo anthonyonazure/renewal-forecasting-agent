@@ -39,8 +39,8 @@ async def test_full_run(tmp_path, monkeypatch):
 
     # Rivermark and Pinnacle are the engineered at-risk accounts
     by_id = {s["account_id"]: s for s in final["scored"]}
-    assert by_id["acct-001"]["renew_probability"] < 0.85   # Pinnacle silent churn
-    assert by_id["acct-011"]["renew_probability"] < 0.65   # Rivermark combined risk
+    assert by_id["acct-001"]["renew_probability"] < 0.85  # Pinnacle silent churn
+    assert by_id["acct-011"]["renew_probability"] < 0.65  # Rivermark combined risk
 
     # Citadel and Aurora should be near-100%
     assert by_id["acct-012"]["renew_probability"] > 0.95

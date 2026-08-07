@@ -8,7 +8,6 @@ import os
 import uuid
 from pathlib import Path
 
-import structlog
 import typer
 from dotenv import load_dotenv
 from rich.console import Console
@@ -26,7 +25,9 @@ console = Console()
 @app.command()
 def run(
     accounts: str = typer.Option(None, "--accounts", "-a", help="YAML accounts file"),
-    coefficients: str = typer.Option(None, "--coefficients", "-c", help="model coefficients JSON"),
+    coefficients: str = typer.Option(
+        None, "--coefficients", "-c", help="model coefficients JSON"
+    ),
 ):
     """Score all accounts and emit a forecast PDF."""
     asyncio.run(_run(accounts, coefficients))
@@ -36,8 +37,10 @@ async def _run(accounts: str | None, coefs: str | None) -> None:
     run_id = uuid.uuid4().hex[:10]
     initial: RState = {
         "run_id": run_id,
-        "accounts_path": accounts or os.environ.get("RENEWAL_ACCOUNTS", "accounts/sample.yaml"),
-        "coefficients_path": coefs or os.environ.get("RENEWAL_MODEL_COEFFS", "model/coefficients.json"),
+        "accounts_path": accounts
+        or os.environ.get("RENEWAL_ACCOUNTS", "accounts/sample.yaml"),
+        "coefficients_path": coefs
+        or os.environ.get("RENEWAL_MODEL_COEFFS", "model/coefficients.json"),
         "events": [],
     }
     graph = build_graph().compile()
@@ -65,9 +68,10 @@ async def _run(accounts: str | None, coefs: str | None) -> None:
     table.add_column("At risk", justify="right")
     for s in sorted(final.get("scored", []), key=lambda s: s["renew_probability"]):
         table.add_row(
-            s["account_name"], str(s["tier"]),
+            s["account_name"],
+            str(s["tier"]),
             f"${s['arr']:,.0f}",
-            f"{s['renew_probability']*100:.0f}%",
+            f"{s['renew_probability'] * 100:.0f}%",
             f"${s['arr_at_risk']:,.0f}",
         )
     console.print(table)
@@ -81,6 +85,7 @@ async def _run(accounts: str | None, coefs: str | None) -> None:
 @app.command()
 def version():
     from renewal import __version__
+
     console.print(f"renewal-forecasting-agent {__version__}")
 
 
