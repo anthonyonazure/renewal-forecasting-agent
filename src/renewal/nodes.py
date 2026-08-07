@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ log = structlog.get_logger()
 
 
 def _event(kind: str, **detail: Any) -> dict[str, Any]:
-    return {"at": datetime.now(timezone.utc).isoformat(), "kind": kind, **detail}
+    return {"at": datetime.now(UTC).isoformat(), "kind": kind, **detail}
 
 
 async def load_inputs(state: RState) -> dict[str, Any]:
@@ -28,7 +28,9 @@ async def load_inputs(state: RState) -> dict[str, Any]:
     return {
         "accounts": accounts,
         "coefficients": coefs,
-        "events": [_event("inputs_loaded", accounts=len(accounts), model=coefs["version"])],
+        "events": [
+            _event("inputs_loaded", accounts=len(accounts), model=coefs["version"])
+        ],
     }
 
 
@@ -47,7 +49,10 @@ async def summarize(state: RState) -> dict[str, Any]:
         at_risk=agg["total_at_risk"],
         avg_prob=agg["avg_renew_probability"],
     )
-    return {"aggregate": agg, "events": [_event("aggregated", at_risk=agg["total_at_risk"])]}
+    return {
+        "aggregate": agg,
+        "events": [_event("aggregated", at_risk=agg["total_at_risk"])],
+    }
 
 
 async def build_pdf(state: RState) -> dict[str, Any]:
@@ -56,11 +61,14 @@ async def build_pdf(state: RState) -> dict[str, Any]:
     from weasyprint import HTML
 
     templates = Path(__file__).resolve().parents[2] / "templates"
-    env = Environment(loader=FileSystemLoader(templates), autoescape=select_autoescape(["html", "xml"]))
+    env = Environment(
+        loader=FileSystemLoader(templates),
+        autoescape=select_autoescape(["html", "xml"]),
+    )
     tpl = env.get_template("forecast.html")
     html = tpl.render(
         run_id=state["run_id"],
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        generated_at=datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
         model_version=state["coefficients"]["version"],
         scored=state["scored"],
         aggregate=state["aggregate"],
@@ -71,4 +79,7 @@ async def build_pdf(state: RState) -> dict[str, Any]:
     pdf_path = out_dir / f"{state['run_id']}-forecast.pdf"
     pdf_path.write_bytes(pdf_bytes)
     log.info("renewal.pdf.built", path=str(pdf_path), bytes=len(pdf_bytes))
-    return {"pdf_path": str(pdf_path), "events": [_event("pdf_built", path=str(pdf_path))]}
+    return {
+        "pdf_path": str(pdf_path),
+        "events": [_event("pdf_built", path=str(pdf_path))],
+    }

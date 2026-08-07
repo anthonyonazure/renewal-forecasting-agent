@@ -26,17 +26,22 @@ def aggregate(scored: list[dict]) -> dict[str, Any]:
     total_at_risk = sum(s["arr_at_risk"] for s in scored)
     avg_prob = sum(s["renew_probability"] for s in scored) / len(scored)
 
-    by_q: dict[str, dict[str, float]] = defaultdict(lambda: {"arr": 0.0, "at_risk": 0.0, "count": 0})
+    by_q: dict[str, dict[str, float]] = defaultdict(
+        lambda: {"arr": 0.0, "at_risk": 0.0, "count": 0}
+    )
     for s in scored:
-        d = s["contract_end"] if isinstance(s["contract_end"], date) else date.fromisoformat(str(s["contract_end"]))
+        d = (
+            s["contract_end"]
+            if isinstance(s["contract_end"], date)
+            else date.fromisoformat(str(s["contract_end"]))
+        )
         q = _quarter_label(d)
         by_q[q]["arr"] += s["arr"]
         by_q[q]["at_risk"] += s["arr_at_risk"]
         by_q[q]["count"] += 1
-    by_quarter = sorted(
-        [{"quarter": q, **v} for q, v in by_q.items()],
-        key=lambda x: x["quarter"],
-    )
+    # Sort the quarter labels themselves; the rows mix a string with floats, so
+    # sorting the assembled dicts loses the key's type.
+    by_quarter = [{"quarter": q, **by_q[q]} for q in sorted(by_q)]
 
     # High risk = renew_prob < 0.5, sorted by ARR at risk
     high_risk = sorted(
@@ -46,7 +51,12 @@ def aggregate(scored: list[dict]) -> dict[str, Any]:
     )
     # Expansion candidates = renew_prob > 0.85 AND positive usage growth
     expansion = sorted(
-        [s for s in scored if s["renew_probability"] > 0.85 and s["features"].get("usage_growth_pct_div_100", 0) > 0.3],
+        [
+            s
+            for s in scored
+            if s["renew_probability"] > 0.85
+            and s["features"].get("usage_growth_pct_div_100", 0) > 0.3
+        ],
         key=lambda s: s["arr"],
         reverse=True,
     )
